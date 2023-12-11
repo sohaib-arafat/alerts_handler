@@ -1,10 +1,22 @@
 const functions = require('@google-cloud/functions-framework');
-const axios = require('axios');
+const {db} = require('./firebase')
+const {concernReportMatcher, textReportMatcher, concernDataMatcher, numericalTriggerMatcher} = require('./checkers')
+require('dotenv').config();
+
 
 functions.cloudEvent('alerts_handler', async cloudEvent => {
     const encodedData = cloudEvent.data.message.data;
-    const data = JSON.parse(Buffer.from(encodedData, 'base64').toString('utf-8'));
-    {"type":"","concern":"","value":"","notes":"","owner":""}
-    const searchResult = await axios.post('https://nlp-matcher-service-55bldnw2za-zf.a.run.app/process', data);
- });
+    let data = JSON.parse(Buffer.from(encodedData, 'base64').toString('utf-8'));
+    // data={"type":"report","concern":"Water Pollution","title":"Water Pollution in Gaza","value":"Report on high water pollution levels in Gaza","owner":"Lina",'date':"17/11/2002"}
+    let q = await db.collection('emails').doc('emails-map').get()
+    const emailsIDs = q.data();
+    if (data.type === 'report') {
+        await concernReportMatcher(data, emailsIDs)
+        await textReportMatcher(data, emailsIDs)
+    }
+    if (data.type === 'data') {
+        await concernDataMatcher()
+        await numericalTriggerMatcher()
+    }
+});
 
