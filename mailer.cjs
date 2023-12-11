@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export async function send(receiver, body) {
+  async function send(receiver, body) {
    await transporter.sendMail({
         from: '"Eco Track ♻️" sohaib.arafat@outlook.com',
         to: receiver,
@@ -133,4 +133,4 @@ export async function send(receiver, body) {
     });
 }
 
-send().then();
+module.exports={send}
